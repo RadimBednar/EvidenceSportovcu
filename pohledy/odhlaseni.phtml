@@ -1,0 +1,14 @@
+<!-- logout.php -->
+
+<?php
+ // Vždy spustíme session na začátku souboru
+
+// Zrušení všech session proměnných
+$_SESSION = array();
+
+// Zničení session
+session_destroy();
+
+// Přesměrování na úvodní stránku nebo kamkoliv jinam po odhlášení
+exit();
+?>

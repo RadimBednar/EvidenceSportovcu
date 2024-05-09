@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+
+    </head>
+    <body>
+    <?php if ($this->data['session']['opravneni'] >= 1) : ?>
+        <h1>Přidaní kola pro Akce</h1>
+
+        <!-- Výpis zpráv -->
+        <?php if (isset($this->zpravy) && !empty($this->zpravy)): ?>
+            <ul>
+                <?php foreach ($this->zpravy as $zprava): ?>
+                    <li><?php echo $zprava; ?></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+        <div class="container">
+        <!-- Formulář pro přidání kolo -->
+        <form  method="post">
+           
+            <label for="nazev_kolo">Název Kolo:</label>
+            <input type="text" name="nazev_kolo" required>
+            <button type="submit" name="pridej">Přidat Kolo</button>
+        </form>
+
+                </div>
+
+        <!-- Výpis všech kol -->
+        <?php if (isset($this->data['kolo']) && !empty($this->data['kolo'])): ?>
+            <h2>Všechny Kolo</h2>
+            <ul>
+            <?php foreach ($this->data['kolo'] as $kolo): ?>
+                <div class="container">
+                    <h4><?php echo $kolo['nazev_kolo']; ?></h4>
+                        <form method="post">
+                            <input type="hidden" name="editovana_kolo_id" value="<?php echo $kolo['id_kolo']; ?>">
+                            <label for="novy_nazev_kolo">Nový název Kolo:</label>
+                            <input type="text" name="novy_nazev_kolo" >
+                            <button type="submit" name="ulozit">Uložit</button>
+                            <input type="hidden" name="smazana_kolo_id" value="<?php echo $kolo['id_kolo']; ?>">
+                            <button type="submit" name="smazat">Smazat</button>
+                        </form>
+                    </li>
+            </div>
+                    <!-- Zde můžete přidat další informace o kolech, které chcete zobrazit -->
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?>
+            <p>Nejsou k dispozici žádné kola.</p>
+        <?php endif; ?>
+
+        <?php elseif($this->data['session']['opravneni'] === null) : $this->presmeruj("ldap"); 
+        elseif($this->data['session']['opravneni'] === 0) : $this->presmeruj("uvod");
+        endif ?>
+    </body>
+</html>

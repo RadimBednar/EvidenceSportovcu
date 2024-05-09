@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+    <!-- Doplňte další obsah hlavičky zde -->
+    <title>Uživatelský profil</title>
+</head>
+
+<body>
+    <section class="zpravy">
+        <?php if (isset($this->data['zpravy']) && is_array($this->data['zpravy'])) {
+            foreach ($this->data['zpravy'] as $zprava) { ?>
+                <div><?= $zprava ?></div>
+            <?php }
+        } ?>
+    </section>
+
+    <main>
+        <h1>Uživatelský profil studenta</h1>
+        <div class="container"> 
+        
+        <?php if (isset($this->data['uzivatel'])||isset($this->data['sportovci'])) {  ?>
+            
+            <?php $pole = array(); 
+           // var_dump($this->data['sportovci']);
+             
+            if(isset($this->data['sportovci'])){
+                foreach ($this->data['sportovci'] as $key => $uzivatel) {
+                    $pole[$key] = $uzivatel;
+                }
+            }
+            
+            ?>
+
+                <h4>Jméno:</h4>
+                <p><?= $pole['jmeno'] ?></p>
+                <h4>Příjmení:</h4>
+                <p><?= $pole['prijmeni'] ?></p>
+                <h4>Email:</h4>
+                <p><?= $pole['email'] ?></p>
+                <h4>Třída:</h4>
+                <p><?= $pole['id_trid'] ?></p>
+                <h4>Datum narození:</h4>
+                <p><?= $pole['dat_nar'] ?></p>
+                <h4>Pohlaví:</h4>
+                <p><?= $pole['pohlavi'] ?></p>
+                <h4>Kontaktní údaje:</h4>
+                <p><?= $pole['kontaktni_udaje'] ?></p>
+                <h4>Odkaz na webové stránky:</h4>
+                <p><?= $pole['odkaz_na_web'] ?></p>
+                <h4>Zdravotní omezení:</h4>
+                <p><?= $pole['zdravotni_omezeni'] ?></p>
+            
+          
+            <div> 
+                    <h4>Sportovní aktivity:</h4>
+                    <?php 
+                    foreach ($this->data['sportuje'] as $sportuje) {
+                      if($pole['email'] != $sportuje['email']) {  
+                        continue;
+                      }
+                        foreach ($this->data['discipliny'] as $disciplina) {
+                            if ($disciplina['id_disc'] != $sportuje['id_disc']) {
+                                continue;
+                            }
+                            echo "<h5>" . $disciplina['nazev_disc'] . "</h5>";
+                         
+                            // Vypsání příslušné úrovně
+                            foreach ($this->data['uroven'] as $uroven) {
+                                if ($uroven['id_urov'] == $sportuje['id_urov']) {
+                                    echo "<p>Úroveň: " . $uroven['nazev_urov'] . "</p>";
+                                    break;
+                                }
+                            }
+                            // Vypsání příslušné pozice
+                            foreach ($this->data['pozice'] as $pozice) {
+                                if ($pozice['id_poz'] == $sportuje['id_poz']) {
+                                    echo "<p>Pozice: " . $pozice['nazev_poz'] . "</p>";
+                                    break;
+                                }
+                            }
+                            // Přidání tlačítka pro odebrání sportu
+                            ?>
+                            
+                    <?php }
+                      
+                    } ?>
+                </div>
+
+           
+        <?php } else { ?>
+            <p>Uživatel není přihlášen nebo nebyl nalezen v LDAP.</p>
+        <?php } ?>
+
+
+            </div>
+    </main>
+</body>
+</html>

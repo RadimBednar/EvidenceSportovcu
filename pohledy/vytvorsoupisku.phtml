@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+
+        <!-- javascript a jquery -->
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <script src="pohledy/script.js"></script> 
+    </head>
+    <body>
+    <?php if ($this->data['session']['opravneni'] >= 1) : ?>
+
+        <h1>Generování soupisky</h1>
+        <div class = "container">
+        <!-- Výpis zpráv -->
+        <?php if (isset($this->zpravy) && !empty($this->zpravy)): ?>
+            <ul>
+                <?php foreach ($this->zpravy as $zprava): ?>
+                    <li><?php echo $zprava; ?></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+
+        <div id="soupiskaUcastnik">
+            <!-- Formulář pro přidání soupisek -->
+            <form  method="post">
+                <!--sekce tabulky "soupiska"-->
+                <h2><?php echo $konkretniakce['nazev_akce']; ?> </h2>
+                <h5 for="nazev_soupisky">Název soupisky:</h5>
+                <input required type="text" name="nazev_soupisky" >
+                <!--sekce tabulky "ucastnik"-->
+                <h5>Účastník <span class="required">*</span></h5>
+                <div>
+                    <select required name="email[]" class="select_uziv" style="width: 100%" multiple>
+                        <?php foreach ($this->data['uziv'] as $uziv):
+                            if($uziv['opravneni'] == 0 ) :?>
+                            <option value="<?= $uziv['email']; ?>"><?= $uziv['id_trid']." ".$uziv['jmeno']." ".$uziv['prijmeni'] ; ?></option>
+                        <?php endif;endforeach; ?>
+                    </select>
+                </div>
+                <button type="submit" name="pridejSoupiskaUcastnik">Přidat záznam</button>
+            </form>
+        </div>
+
+        <div id="disciplina">
+            <form method="post">
+                <h2>Přiřazení disciplíny</h2>
+                <div>
+                    <?php
+                    foreach ($this->data['ucast'] as $ucast){
+                        if(!($soupiska['id_soup']==$ucast['id_soup'])) {
+                            continue;
+                        }
+                        foreach ($this->data['uziv'] as $uziv){
+                            if(!($uziv['email'] == $ucast['email'])) {
+                                continue;  
+                            }
+                            ?>
+                            <input type="hidden" name="id_ucastnika[]" value="<?= $ucast['id_ucast'] ?>"> 
+                            <label><?php echo $uziv['id_trid']." ".$uziv['jmeno']." ".$uziv['prijmeni'];?> </label>
+                            <select name="ucastnici[<?= $ucast['id_ucast'] ?>][]" class="select_disc" style="width: 100%" multiple required><?php
+                                foreach($this->data['discipliny'] as $disc) :?>
+                                    <option value="<?php echo $disc['id_disc']; ?>"><?php echo $disc['nazev_disc']; ?></option>
+                                <?php endforeach
+                                ?>
+                            </select><br>
+                        <?php
+                        }
+                    }
+                    ?>
+                </div>
+                <button type="submit" name="priradDiscipliny">Uložit</button>
+            </form>
+        </div>
+
+         <!-- javascript (phases/fáze) -->
+         <script>
+            $(document).ready(function() {
+                var su = $("#soupiskaUcastnik");
+                var d = $("#disciplina");
+
+
+                    if (<?php echo intval($faze)?> == 0) {
+                        su.css("display", "block");
+                        d.css("display", "none");
+                    } else {
+                        su.css("display", "none");
+                        d.css("display", "block");
+                    }
+
+            });
+        </script>
+    <?php elseif($this->data['session']['opravneni'] === null) : $this->presmeruj("ldap"); 
+    elseif($this->data['session']['opravneni'] === 0) : $this->presmeruj("uvod");
+    endif ?>
+    </body>
+</html>

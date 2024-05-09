@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+
+    </head>
+    <body>
+
+    <?php if ($this->data['session']['opravneni'] >= 1) : ?>
+        <h1>Přidaní opakovanosti pro Akce</h1>
+
+        <!-- Výpis zpráv -->
+        <?php if (isset($this->zpravy) && !empty($this->zpravy)): ?>
+            <ul>
+                <?php foreach ($this->zpravy as $zprava): ?>
+                    <li><?php echo $zprava; ?></li>
+                <?php endforeach; ?>
+            </ul>
+
+
+        <?php endif; ?>
+        <div class="container">
+        <!-- Formulář pro přidání opakovanosti -->
+        <form  method="post">
+            <label for="nazev_opak">Název Opakovanost:</label>
+            <input type="text" name="nazev_opak" required>
+            <button type="submit" name="pridej">Přidat Opakovanost</button>
+        </form>
+                </div>
+
+
+        <!-- Výpis všech opakovanosti -->
+
+        <?php if (isset($this->data['opak']) && !empty($this->data['opak'])): ?>
+            <h2>Všechny Opakovanosti</h2>
+            <ul>
+                <?php foreach ($this->data['opak'] as $opak): ?>
+                    <div class="container">
+                    <h4><?php echo $opak['nazev_opak']; ?></h4>
+                        <form method="post">
+                            <input type="hidden" name="editovana_opak_id" value="<?php echo $opak['id_opak']; ?>">
+                            <label for="novy_nazev_opak">Nový název Opakovanost:</label>
+                            <input type="text" name="novy_nazev_opak" >
+                            <button type="submit" name="ulozit">Uložit</button>
+                            <input type="hidden" name="smazana_opak_id" value="<?php echo $opak['id_opak']; ?>">
+                            <button type="submit" name="smazat">Smazat</button>
+                        </form>
+                    </li>
+                </div>
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?>
+            <p>Nejsou k dispozici žádné pozice.</p>
+        <?php endif; ?>
+
+
+    <?php elseif($this->data['session']['opravneni'] === null) : $this->presmeruj("ldap"); 
+    elseif($this->data['session']['opravneni'] === 0) : $this->presmeruj("uvod");
+    endif ?>
+    </body>
+</html>

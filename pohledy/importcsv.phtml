@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+</head>
+<body>
+    <?php 
+    
+   if ($this->data['session']['opravneni'] >= 1) : ?>
+    <h1>Importovat CSV do databáze</h1>
+
+    <!-- Formulář pro vyprázdnění databáze před importováním studentů -->
+    <div class="container">
+    <form method="post">
+        <label>Vypázdnit databázi před importováním studentů</label>
+            <button type="submit" name="vyprazdnit">Vypázdnit databázi</button>
+        
+    </form>
+    </div>
+
+    <!-- Formulář pro nahrání CSV souboru k importování -->
+    <div class="container">
+    <form method="post" enctype="multipart/form-data">
+        <label>
+            Vyberte CSV soubor pro import:
+            <input type="file" name="csv_file" accept=".csv" required>
+        </label>
+        <button type="submit" name="import">Importovat</button>
+    </form>
+    </div>
+    <?php elseif($this->data['session']['opravneni'] === null) : $this->presmeruj("ldap"); 
+    elseif($this->data['session']['opravneni'] === 0) : $this->presmeruj("uvod");
+    endif ?>
+</body>
+</html>

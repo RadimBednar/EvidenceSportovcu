@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+    <title>List of Links</title>
+</head>
+<body>
+<?PHP if ($this->data['session']['opravneni'] < 1 && isset($_SESSION['loggedIn'])) { ?>
+<div class="container">
+           
+
+        <h2>Akce na kterých jste přihlášeni</h2>
+    <ul>
+    <?php foreach ($this->data["serazeniUcast"] as $akceUcast): ?>
+        <?php if ($akceUcast['archivovano'] == 0): ?>
+            <li>
+                <a href="akce?ia=<?php echo $akceUcast['id_akce']; ?>">
+                <h6><?php echo $akceUcast['nazev_akce']; ?></h6> 
+                </a>
+            </li>
+        <?php endif; ?>
+    <?php endforeach; ?>
+    </ul>
+
+        </div>
+
+        <div class="container">
+        <h2>Akce o které máte zájem</h2>
+        <ul>
+            <?php foreach ($this->data["serazeniZajem"] as $akceZajem): ?>
+                <?php 
+                    $jePrihlasen = false;
+                    foreach ($this->data["serazeniUcast"] as $akceUcast) {
+                        if ($akceUcast['id_akce'] == $akceZajem['id_akce']) {
+                            $jePrihlasen = true;
+                            break;
+                        }
+                    }
+                    if (!$jePrihlasen && $akceZajem['archivovano'] == 0): 
+                ?>
+                    <li>
+                        <a href="akce?ia=<?php echo $akceZajem['id_akce']; ?>">
+                           <h6><?php echo $akceZajem['nazev_akce']; ?></h6>
+                        </a>
+                    </li>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+
+
+    <?php } ?>            
+    
+
+<!-- Display the list of links -->
+<div class="container">
+    <?php if(isset($this->data["serazeniUcast"])){?>
+        <h2>Nadcházející akce</h2>
+        <ul>
+            <?php foreach ($this->data["akce"] as $akce): ?>
+                <?php 
+                    $jePrihlasen = false;
+                    $jeZajem = false;
+                    foreach ($this->data["serazeniUcast"] as $akceUcast) {
+                        if ($akceUcast['id_akce'] == $akce['id_akce']) {
+                            $jePrihlasen = true;
+                            break;
+                        }
+                    }
+                    foreach ($this->data["serazeniZajem"] as $akceZajem) {
+                        if ($akceZajem['id_akce'] == $akce['id_akce']) {
+                            $jeZajem = true;
+                            break;
+                        }
+                    }
+                    if (!$jePrihlasen && !$jeZajem && $akce['archivovano'] == 0): 
+                ?>
+                    <li>
+                        <a href="akce?ia=<?php echo $akce['id_akce']; ?>">
+                            <?php echo '<h6>'.$akce['nazev_akce'].'</h6>'; ?>
+                        </a>
+                        
+                    </li>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </ul>
+
+        <?php }else {?>
+
+            <h2>Nadcházející akce</h2>
+<ul>
+    <?php foreach ($this->data["akce"] as $akce): ?>
+        <?php if ($akce['archivovano'] == 0): ?>
+            <li>
+                <a href="akce?ia=<?php echo $akce['id_akce']; ?>">
+                    <?php echo $akce['nazev_akce']; ?>
+                </a>
+            </li>
+
+        <?php endif; ?>
+    <?php endforeach; ?>
+</ul>
+
+
+            <?php }?>
+    </div>
+
+<!-- Display the list of links with archivovano = 1 -->
+<div class="container">
+<h2>Archív akcí</h2>
+<ul>
+    <?php foreach ($this->data["akce"] as $akce): ?>
+        <?php if ($akce['archivovano'] == 1): ?>
+            <li>
+                <a href="akce?ia=<?php echo $akce['id_akce']; ?>">
+                <h6><?php echo $akce['nazev_akce']; ?></h6> 
+                </a>
+            </li>
+
+        <?php endif; ?>
+    <?php endforeach; ?>
+</ul>
+</div>
+</body>
+</html>

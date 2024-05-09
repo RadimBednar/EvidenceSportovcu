@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <base href="/">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+    <title>MP evidence sportovců</title>
+</head>
+<body>
+
+
+    <?php
+    //--------------------------------- Session ------------------------------------------------------------------
+
+    $modelUzivatele = new ModelyUzivatel();
+
+    // Zkontroluj, zda je uživatel přihlášen
+    if (!isset($_SESSION['loggedIn']) || !$_SESSION['loggedIn']) {
+        $session['opravneni'] = null;
+    
+    } else {
+    
+        // Získání emailu přihlášeného uživatele z session
+        $emailUzivatele = $_SESSION['email'];
+    
+        // Získání informací o přihlášeném uživateli z databáze
+        $uzivatelInfo = $modelUzivatele->vratInfoPodleEmailu($emailUzivatele);
+    
+        // Kontrola, zda byl uživatel nalezen v databázi
+        
+        if ($uzivatelInfo) {
+            $session = $uzivatelInfo; 
+        }
+    }
+
+    //--------------------------------- Session ------------------------------------------------------------------
+    ?>
+
+
+<header>
+    
+        <div class="logo">
+      <a href="uvod"><img src="fotky/logoSpseiostrava.png" alt="Logo"></a>
+        </div>        
+
+    <input type="checkbox" id="menu-bar"> 
+    <label for="menu-bar">MENU</label>
+
+    <nav class="navbar">
+        <ul>
+            <?php if (isset($_SESSION['loggedIn']) && $session['opravneni'] >= 1) { ?>
+            <li><a>Přidání</a> 
+                <ul>
+                     <li><a href="disciplina">Disciplíny</a></li>
+                     <li><a href="sporty">Sporty</a></li>
+                     <li><a href="kolo">Koly</a></li>
+                     <li><a href="opakovanost">Opakovanosti</a></li>
+                     <li><a href="pozice">Pozice</a></li>
+                     <li><a href="uroven">Úrovně </a></li>
+                </ul>
+            </li>
+            
+            <li><a>Uživatelé</a> 
+                <ul>
+                    <li><a href="importcsv">Import</a></li>   
+                    <li><a href="pridelenidisciplin">Přidelení k disciplínam</a></li>
+                    <li><a href="sportovci">Sportovci</a></li>
+                    <li><a href="admineditace">Admin</a></li>
+                </ul>
+            </li>
+            <?php } ?>
+            <?php if(isset($_SESSION['loggedIn'])){ ?>
+            <li><a href="profil">Profil</a></li>
+            <li><a href="statistiky">Statistiky</a></li>
+
+            <?php }?>
+            
+            <li><a href="vypisakci">Výpis akcí</a></li>
+            <?php if ($session['opravneni'] >= 1): ?>
+            <li><a href="vytvorakce">Vytvoreni Akcí</a></li>
+            <?php endif; ?>
+
+            <?php  if (isset($_SESSION['loggedIn'])) { ?>
+                <li><a href="odhlaseni">Odhlásit se</a></li>    
+                <?php } else { ?>
+                    <li><a href="ldap">Přihlásit se</a></li>
+                <?php } ?> 
+        </ul>
+    </nav>
+
+</header>
+
+<section class="zpravy">
+    <?php foreach ($zpravy as $zprava) { ?>
+        <div><?= $zprava ?></div>
+    <?php } ?>
+</section>
+
+<main>
+    <?php
+    $this->kontroler->vypisPohled();
+    ?>
+</main>
+</body>
+</html>

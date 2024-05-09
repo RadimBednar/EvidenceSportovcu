@@ -1,0 +1,380 @@
+
+<link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+<?php use Mpdf\Mpdf;?>
+<?php if ($this->data['session']['opravneni'] >= null) : ?>
+
+<?php  
+    
+    ob_start();?>
+
+    <h1>Statistiky</h1>
+
+    <div class="container">
+    <table border="1">
+        <tr>
+            <th>Název akce</th>
+            <th>Disciplíny</th>
+            <th>Počet účastněných tříd</th>
+            <th>Třídy</th>
+        </tr>
+<?php
+        // Projdi všechny akce
+        foreach ($this->data["akce"] as $akceItem) {
+            // Přidejte podmínku pro filtrování archivovaných akcí
+            if ($akceItem['archivovano'] == 1) {
+                // Přidejte podmínku pro filtrování akcí podle datum_zahajeni
+                $datumZahajeni = strtotime($akceItem['datum_zahajeni']);
+                $aktualniRokZahajeni = date('Y', $datumZahajeni);
+
+                // Přidejte podmínku pro filtrování akcí podle datum_konce
+                $datumKonce = strtotime($akceItem['datum_konce']);
+                $aktualniRokKonce = date('Y', $datumKonce);
+
+                // Kontrola, zda se v datum_zahajeni a datum_konce nachází aktuální rok
+                if ($aktualniRokZahajeni == date('Y') && $aktualniRokKonce == date('Y')) {
+                    // Inicializuj pole pro aktuální akci
+                    $pocetUcastnenychTridNaAkci[$akceItem['id_akce']] = 0;
+
+                    // Inicializuj pole pro sledování již zaznamenaných tříd
+                    $zaznamenaneTridy = array();
+
+                    // Pole pro uchování konkrétních tříd na dané akci
+                    $ucastneneTridyNaAkci = array();
+
+                    // Pole pro uchování disciplín akce bez duplicit
+                    $disciplinyNaAkci = array();
+
+                    // Projdi všechny účastníky
+                    foreach ($this->data["ucast"] as $ucastnik) {
+                        // Zkontroluj, jestli účastník je přítomen na aktuální akci
+                        if ($ucastnik['id_soup'] == $akceItem['id_akce']) {
+                            // Získáme ID uživatele a pomocí něj získáme ID třídy
+                            $emailUzivatele = $ucastnik['email'];
+
+                            // Najdeme uživatele v seznamu všech uživatelů
+                            foreach ($this->data["uzivatele"] as $uzivatel) {
+                                if ($uzivatel['email'] == $emailUzivatele) {
+                                    $idTridy = $uzivatel['id_trid'];
+
+                                    // Pokud třída ještě není zaznamenána, inkrementujeme počet účastněných tříd a přidáme do pole
+                                    if (!in_array($idTridy, $zaznamenaneTridy)) {
+                                        $zaznamenaneTridy[] = $idTridy;
+                                        $ucastneneTridyNaAkci[] = $idTridy;
+                                        $pocetUcastnenychTridNaAkci[$akceItem['id_akce']]++;
+                                    }
+                                    break;  // Ukončíme smyčku, protože jsme našli odpovídajícího uživatele
+                                }
+                            }
+
+                            // Projdi všechny disciplíny spojené s akcí
+                            foreach ($this->data["akcedisc"] as $akcediscItem) {
+                                if ($akcediscItem['id_akce'] == $akceItem['id_akce']) {
+                                    // Najdeme disciplínu v seznamu všech disciplín
+                                    foreach ($this->data["disc"] as $discItem) {
+                                        if ($discItem['id_disc'] == $akcediscItem['id_disc'] && !in_array($discItem['nazev_disc'], $disciplinyNaAkci)) {
+                                            $disciplinyNaAkci[] = $discItem['nazev_disc'];
+                                            break;  // Ukončíme smyčku, protože jsme našli odpovídající disciplínu
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Výpis do tabulky
+                    echo "<tr>";
+                    echo "<td>{$akceItem['nazev_akce']}</td>";
+                    echo "<td>" . implode(", ", $disciplinyNaAkci) . "</td>";
+                    echo "<td>{$pocetUcastnenychTridNaAkci[$akceItem['id_akce']]}</td>";
+                    echo "<td>" . implode(", ", $ucastneneTridyNaAkci) . "</td>";
+                    echo "</tr>";
+                }
+            }
+        }
+        ?>
+    </table>
+    </div>
+
+
+
+    <h1>Statistiky podle soutěže</h1>
+
+    <div class="container">
+    <table border="1">
+        <tr>
+            <th>Kolo</th>
+            <th>Počet účastněných tříd</th>
+            <th>Třídy</th>
+        </tr>
+        <?php
+        // Projdi všechna kola
+        foreach ($this->data["kolo"] as $koloItem) {
+            // Inicializuj pole pro aktuální kolo
+            $pocetUcastnenychTridNaKolo[$koloItem['nazev_kolo']] = 0;
+
+            // Inicializuj pole pro sledování již zaznamenaných tříd
+            $zaznamenaneTridyKola = array();
+
+            // Pole pro uchování konkrétních tříd na dané akci
+            $ucastneneTridyNaKolo = array();
+
+            // Projdi všechny akce
+            foreach ($this->data["akce"] as $akceItem) {
+                if ($akceItem['archivovano'] == 1) {
+
+                
+                // Zjisti kolo aktuální akce
+                if ($akceItem['id_kolo'] == $koloItem['id_kolo']) {
+                    // Projdi všechny účastníky
+                    foreach ($this->data["ucast"] as $ucastnik) {
+                        // Zkontroluj, jestli účastník je přítomen na aktuální akci
+                        if ($ucastnik['id_soup'] == $akceItem['id_akce']) {
+                            // Získáme ID uživatele a pomocí něj získáme ID třídy
+                            $emailUzivatele = $ucastnik['email'];
+
+                            // Najdeme uživatele v seznamu všech uživatelů
+                            foreach ($this->data["uzivatele"] as $uzivatel) {
+                                if ($uzivatel['email'] == $emailUzivatele) {
+                                    $idTridy = $uzivatel['id_trid'];
+
+                                    // Pokud třída ještě není zaznamenána, inkrementujeme počet účastněných tříd a přidáme do pole
+                                    if (!in_array($idTridy, $zaznamenaneTridyKola)) {
+                                        $zaznamenaneTridyKola[] = $idTridy;
+                                        $ucastneneTridyNaKolo[] = $idTridy;
+                                        $pocetUcastnenychTridNaKolo[$koloItem['nazev_kolo']]++;
+                                    }
+                                    break;  // Ukončíme smyčku, protože jsme našli odpovídajícího uživatele
+                                }
+                            }
+                        }
+                    }
+                }
+                }
+            }
+
+            // Výpis do tabulky
+            echo "<tr>";
+            echo "<td>{$koloItem['nazev_kolo']}</td>";
+            echo "<td>{$pocetUcastnenychTridNaKolo[$koloItem['nazev_kolo']]}</td>";
+            echo "<td>" . implode(", ", $ucastneneTridyNaKolo) . "</td>";
+            echo "</tr>";
+        }
+        ?>
+    </table>
+    </div>
+    <h1>Doprovázející učitelé</h1>
+    <div class="container">
+    <table border="1">
+        <tr>
+            <th>Jméno</th>
+            <th>Počet zastoupení</th>
+        </tr>
+        <?php
+        // Inicializuj pole pro sledování již zaznamenaných učitelů
+        $zaznamenaniUcitele = array();
+
+        // Projdi všechny akce
+        foreach ($this->data["akce"] as $akceItem) {
+            // Získáme přítomné učitele ve formátu řetězce
+            if ($akceItem['archivovano'] == 1) {
+            $pritomniUcitele = $akceItem['pritomni_uc'];
+
+            // Rozdělíme řetězec na jednotlivé položky (jména učitelů) pomocí čárky
+            $ucitele = explode(",", $pritomniUcitele);
+
+            // Projdi všechny učitele
+            foreach ($ucitele as $jmenoUcitele) {
+                // Ořízneme případné mezery kolem jména
+                $jmenoUcitele = trim($jmenoUcitele);
+
+                // Pokud je jméno neprázdné, aktualizujeme počet zastoupení
+                if (!empty($jmenoUcitele)) {
+                    // Pokud učitel ještě není zaznamenán, inicializujeme jeho počet zastoupení na 1, jinak inkrementujeme
+                    if (!isset($zaznamenaniUcitele[$jmenoUcitele])) {
+                        $zaznamenaniUcitele[$jmenoUcitele] = 1;
+                    } else {
+                        $zaznamenaniUcitele[$jmenoUcitele]++;
+                    }
+                }
+            }
+        }
+    }
+
+
+        // Výpis do tabulky
+        foreach ($zaznamenaniUcitele as $jmeno => $pocetZastoupeni) {
+            echo "<tr>";
+            echo "<td>{$jmeno}</td>";
+            echo "<td>{$pocetZastoupeni}</td>";
+            echo "</tr>";
+        }
+        ?>
+    </table>
+    </div>
+    
+
+
+    <h1>Nejlepší výsledky podle disciplín</h1>
+
+    <div class="container">
+    <table border="1">
+        <tr>
+            <th>Disciplina</th>
+            <th>Počet prvních míst</th>
+            <th>Počet druhých míst</th>
+            <th>Počet třetích míst</th>
+        </tr>
+        <?php
+        // Inicializuj proměnné pro uchování počtu umístění pro každou disciplínu
+        $pocetPrvnichMistDisc = array();
+        $pocetDruhychMistDisc = array();
+        $pocetTretichMistDisc = array();
+
+        // Projdi všechny akce s archivovaným stavem
+        foreach ($this->data["akce"] as $akceItem) {
+            if ($akceItem['archivovano'] == 1) {
+                // Projdi všechny disciplíny spojené s akcí
+                foreach ($this->data["akcedisc"] as $akcediscItem) {
+                    if ($akcediscItem['id_akce'] == $akceItem['id_akce']) {
+                        // Najdeme disciplínu v seznamu všech disciplín
+                        foreach ($this->data["disc"] as $discItem) {
+                            if ($discItem['id_disc'] == $akcediscItem['id_disc']) {
+                                $nazevDiscipliny = $discItem['nazev_disc'];
+
+                                // Projdi všechny soupisky pro aktuální akci
+                                foreach ($this->data["soup"] as $soupiskaItem) {
+                                    if ($soupiskaItem['id_akce'] == $akceItem['id_akce']) {
+                                        // Získáme ID soupisky
+                                        $idSoupisky = $soupiskaItem['id_soup'];
+
+                                        // Projdi všechny účastníky přiřazené k soupisce
+                                        foreach ($this->data["ucast"] as $ucastnik) {
+                                            if ($ucastnik['id_soup'] == $idSoupisky) {
+                                                // Ořízneme případné mezery kolem výsledku
+                                                $vysledky = explode(",", $ucastnik['vys_u']);
+
+                                                // Inicializuj počet umístění pro aktuálního účastníka
+                                                $prvniM = 0;
+                                                $druheM = 0;
+                                                $tretiM = 0;
+
+                                                // Projdi všechny výsledky
+                                                foreach ($vysledky as $vysledek) {
+                                                    // Ořízneme případné mezery kolem výsledku
+                                                    $vysledek = strtolower(trim($vysledek));
+                                                
+
+                                                    // Inkrementujeme počet umístění podle hodnoty výsledku
+                                                    switch ($vysledek) {
+                                                        case 'první místo':
+                                                            $prvniM++;
+                                                            break;
+                                                        case 'druhé místo':
+                                                            $druheM++;
+                                                            break;
+                                                        case 'třetí místo':
+                                                            $tretiM++;
+                                                            break;
+                                                            case 'prvni misto':
+                                                                $prvniM++;
+                                                                break;
+                                                            case 'druhe misto':
+                                                                $druheM++;
+                                                                break;
+                                                            case 'tretí misto':
+                                                                $tretiM++;
+                                                                break;
+                                                    }
+                                                }
+
+                                                // Zaznamenáme počet umístění pro aktuální disciplínu
+                                                if (!isset($pocetPrvnichMistDisc[$nazevDiscipliny])) {
+                                                    $pocetPrvnichMistDisc[$nazevDiscipliny] = 0;
+                                                }
+                                                $pocetPrvnichMistDisc[$nazevDiscipliny] += $prvniM;
+
+                                                if (!isset($pocetDruhychMistDisc[$nazevDiscipliny])) {
+                                                    $pocetDruhychMistDisc[$nazevDiscipliny] = 0;
+                                                }
+                                                $pocetDruhychMistDisc[$nazevDiscipliny] += $druheM;
+
+                                                if (!isset($pocetTretichMistDisc[$nazevDiscipliny])) {
+                                                    $pocetTretichMistDisc[$nazevDiscipliny] = 0;
+                                                }
+                                                $pocetTretichMistDisc[$nazevDiscipliny] += $tretiM;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Výpis do tabulky
+        foreach ($pocetPrvnichMistDisc as $nazevDiscipliny => $pocetPrvnichMist) {
+            echo "<tr>";
+            echo "<td>{$nazevDiscipliny}</td>";
+            echo "<td>{$pocetPrvnichMist}</td>";
+            echo "<td>{$pocetDruhychMistDisc[$nazevDiscipliny]}</td>";
+            echo "<td>{$pocetTretichMistDisc[$nazevDiscipliny]}</td>";
+            echo "</tr>";
+        }
+        ?>
+    </table>
+    </div>
+    <h1>Nejčastěji zastoupené disciplíny</h1>
+
+    <div class="container">
+    <table border="1">
+        <tr>
+            <th>Název disciplíny</th>
+            <th>Počet</th>
+        </tr>
+        <?php
+        // Inicializuj pole pro sledování výskytů disciplín
+        $pocetVyskytuDisciplin = array();
+
+        // Projdi všechny akce s archivovaným stavem
+        foreach ($this->data["akce"] as $akceItem) {
+            if ($akceItem['archivovano'] == 1) {
+                // Projdi všechny disciplíny spojené s akcí
+                foreach ($this->data["akcedisc"] as $akcediscItem) {
+                    if ($akcediscItem['id_akce'] == $akceItem['id_akce']) {
+                        // Najdeme disciplínu v seznamu všech disciplín
+                        foreach ($this->data["disc"] as $discItem) {
+                            if ($discItem['id_disc'] == $akcediscItem['id_disc']) {
+                                $nazevDiscipliny = $discItem['nazev_disc'];
+
+                                // Inkrementujeme počet výskytů disciplíny
+                                if (!isset($pocetVyskytuDisciplin[$nazevDiscipliny])) {
+                                    $pocetVyskytuDisciplin[$nazevDiscipliny] = 0;
+                                }
+                                $pocetVyskytuDisciplin[$nazevDiscipliny]++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Výpis do tabulky
+        foreach ($pocetVyskytuDisciplin as $nazevDiscipliny => $pocetVyskytu) {
+            echo "<tr>";
+            echo "<td>{$nazevDiscipliny}</td>";
+            echo "<td>{$pocetVyskytu}</td>";
+            echo "</tr>";
+        }
+        ?>
+    </table>
+
+    </div>
+    <?php if ($this->data['session']['opravneni'] >= 1) : ?>
+    <form method="post" >
+        <button type="submit" name="genPDF" >VygenerujPDF</button>
+    </form>
+    <?php 
+    endif ?>
+     <?php else : $this->presmeruj("uvod"); endif ?>

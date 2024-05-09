@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+    <style>
+        #edit {
+            display: none;
+        }
+    </style>
+</head>
+<body>  
+<?php if ($this->data['session']['opravneni'] != null) : ?>
+
+
+<!-- Výpis zpráv -->
+<?php if (isset($this->zpravy) && !empty($this->zpravy)): ?>
+    <ul>
+        <?php foreach ($this->zpravy as $zprava): ?>
+            <li><?php echo $zprava; ?></li>
+        <?php endforeach; ?>
+    </ul>
+<?php endif; ?>
+
+<h1><?php echo $konkretniarchiv['nazev_akce'];?></h1>
+<!-- tlačítko pro přepínaní mezi vypisem a editem -->
+<!-- <button id="switch">Switch</button> -->
+
+<!-- Vypis archiv -->
+<div id="vypis" class = "container">
+
+    <h4>Popisek akce: </h4>
+    <?php echo '<p>'.$konkretniarchiv['popisek_akce'].'</p>';?>
+    <h4>Datum zahajeni: </h4>
+    <?php echo '<p>'.$konkretniarchiv['datum_zahajeni']; ?>
+    <!-- Delka dni -->
+    <h4>Datum konce: </h4>
+    <?php echo '<p>'.$konkretniarchiv['datum_konce']; ?>
+    <h4>Misto konani: </h4>
+    <?php echo '<p>'.$konkretniarchiv['misto_kon']; ?>
+    <div>
+        <h4>Disciplíny:</h4>
+        <?php foreach ($this->data['akcedisc'] as $ad):
+            if($ad['id_akce'] == $konkretniarchiv['id_akce']){
+                foreach ($this->data['disc'] as $disc):
+                    if($ad['id_disc'] == $disc['id_disc']){
+                        echo '<p>'.$disc['nazev_disc']."<br>";
+                    }
+                endforeach;
+            }
+        endforeach; ?>
+    </div>
+
+    <h4 for="poradatel">Poradatel: </h4>
+   <?php echo '<p>'.$konkretniarchiv['poradatel']; ?>
+
+    <h4 for="opak">Opakovanost: </h4>
+    <?php  foreach ($this->data["opak"] as $opak){
+        if($opak["id_opak"] == $konkretniarchiv["id_opak"]){
+            echo '<p>'.$opak["nazev_opak"];
+        }
+    }      ?>
+
+    <h4 for="kolo">Kolo: </h4>
+    <?php  foreach ($this->data["kolo"] as $kolo){
+        if($kolo["id_kolo"] == $konkretniarchiv["id_kolo"]){
+            echo '<p>'.$kolo["nazev_kolo"];
+        }
+    }      ?>
+    
+
+
+</div>
+<br><br>
+
+<h1 style="text-align: center">Údaje pro archív</h1>
+<div class = "container">
+
+<form method="post">
+    <!-- Edit akcedisc -->
+    <h5>Přítomní učitelé: </h5>
+    <input type="text" value="<?php echo $konkretniarchiv['pritomni_uc']; ?>" name="pritomni_uc">
+
+  <!--  <label>Hodnocení soupisky: </label>
+    <input type="text"  name="vys_s"> !-->
+
+    <h5>Výsledek soupisky:</h5>
+    <?php
+    $modelSoupiska = new ModelySoupiska();
+    $soupiska = $modelSoupiska->vratVsechnySoupisky();
+
+    foreach ($soupiska as $soup) {
+        if ($this->data['air'] == $soup["id_akce"]) {
+            ?>
+            <div>
+                <label for="vys_s_<?php echo $soup['id_soup']; ?>"><?php echo $soup['nazev_skupiny']; ?></label>
+                <input type="text" name="vys_s[<?php echo $soup['id_soup']; ?>]">
+            </div>
+            <?php
+        }
+    }
+    ?>
+
+    <h5>Vyjádření učitele: </h5>
+    <input type="text" name="shrnuti">
+
+     <!-- Zobrazení účastníků akce s možností přidání hodnocení -->
+
+<?php 
+
+
+?>
+
+
+    <div>
+        <h5>Učastníci:</h5>
+        <?php
+
+        $modelSoupiska = new ModelySoupiska();
+        $soupiska = $modelSoupiska->vratVsechnySoupisky();
+
+        foreach ($soupiska as $soup) {
+            if ($this->data['air'] == $soup["id_akce"]) {
+                $konkretnisoupiska = [
+                    'id_soup' => $soup["id_soup"],
+                    'id_akce' => $soup['id_akce'],
+                    'nazev_skupiny' => $soup['nazev_skupiny'],
+                    'vys_s' => $soup['vys_s'],
+                ];
+
+                $this->data["konkretnisoupiska"] = $konkretnisoupiska;
+
+                foreach ($this->data['ucastnici'] as $ucast) {
+                    if (!($ucast['id_soup'] == $konkretnisoupiska['id_soup'])) {
+                        continue;
+                    }
+
+                    foreach ($this->data['uzivatele'] as $uziv) {
+                        if (!($ucast['email'] == $uziv['email'])) {
+                            continue;
+                        }
+
+                        echo "<div>";
+                        echo '<p>'.$uziv['jmeno']." ".$uziv['prijmeni']." ".$uziv['id_trid']."<br>";
+                        ?>
+                        <h5 for="vys_u_<?php echo $uziv['email']; ?>">Výsledek účastníka</h5>
+                        <input type="text" name="vys_u[<?php echo $ucast['id_ucast']; ?>]" >
+                        <?php
+                        foreach ($this->data['du'] as $du) {
+                            if (!($du['id_ucast'] == $ucast['id_ucast'])) {
+                                continue;
+                            }
+                            foreach ($this->data['disc'] as $disc) {
+                                if (!($du['id_disc'] == $disc['id_disc'])) {
+                                    continue;
+                                }
+                                echo "Disciplína : ".$disc['nazev_disc']."<br>";
+                            }
+                        }
+                        echo "</div>";
+                    }
+                }
+            }
+        }
+        ?>
+    </div>
+
+    <!-- Tlačítka pro Uložení a Smazání -->
+    <button type="submit" name="archivovat">Archivovat</button>
+   <!-- <button type="submit" name="archivovat">Archiovat</button>;  -->
+</form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- javascript (Combobox) -->
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+
+
+<!-- javascript (Switch) -->
+<script>
+    $(document).ready(function() {
+        var vypis = $("#vypis");
+        var edit = $("#edit");
+
+        $("#switch").click(function() {
+            if (vypis.css("display") === "block") {
+                vypis.css("display", "none");
+                edit.css("display", "block");
+            } else {
+                vypis.css("display", "block");
+                edit.css("display", "none");
+            }
+        });
+    });
+</script>
+
+    <?php else : $this->presmeruj("ldap"); endif ?>
+
+</body>
+</html>

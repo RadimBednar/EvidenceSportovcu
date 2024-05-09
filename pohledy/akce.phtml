@@ -1,0 +1,288 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+
+        <!-- javascript a jquery -->
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <script src="pohledy/script.js"></script> 
+    </head>
+    <body>
+
+        <!-- Výpis zpráv -->
+        <?php     
+        if (isset($this->zpravy) && !empty($this->zpravy)): ?>
+            <ul>
+                <?php foreach ($this->zpravy as $zprava): ?>
+                    <li><?php echo $zprava; ?></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+
+      
+
+        <h1><?php echo $konkretniAkce['nazev_akce'];?></h1>
+        <!-- tlačítko pro přepínaní mezi vypisem a editem -->
+        <?php if ($konkretniAkce["archivovano"] == 0 && $this->data['session']['opravneni'] >= 1): ?>
+            <button id="switch">Switch</button>
+        <?php endif; ?>
+
+
+        <div class = "container">
+        <!-- Vypis akce -->
+        <div id="vypis_a">
+            <h4>Popisek akce: </h4>
+            <?php echo '<p>'.$konkretniAkce['popisek_akce'].'</p>';?>
+            <h4>Datum zahajeni: </h4>
+            <?php echo '<p>'.$konkretniAkce['datum_zahajeni']; ?>
+
+            <!-- Delka dni -->   
+            <h4>Datum konce: </h4>
+            <?php echo '<p>'.$konkretniAkce['datum_konce']; ?>
+
+            <!-- Misto konani -->
+            <h4>Misto konani: </h4>
+            <?php echo '<p>'.$konkretniAkce['misto_kon']; ?>
+
+            <!-- Pořadatel -->
+            <h4>Pořadatel</h4>
+            <?php echo '<p>'.$konkretniAkce['poradatel']?>
+
+            <div>
+                <!-- Opakovannost -->
+                <h4>Opakovannost</h4>
+                <?php
+                echo '<p>'.$konkretniAkce["nazev_opak"];
+
+                ?>
+            </div>
+
+            <div>
+                <!-- Kolo -->
+                <h4>Kolo</h4>
+                <?php
+                echo '<p>'.$konkretniAkce["nazev_kolo"];
+                ?>
+            </div>
+
+            <div>
+                <!-- Disciplíny -->
+                <h4>Disciplíny:</h4>
+                <?php 
+                foreach($this->data['discipliny'] as $disc){
+                    echo '<p>'.$disc['nazev_disc'] . "<br>";
+                }
+
+                ?>
+            </div>
+
+            <?php if ($konkretniAkce["archivovano"] == 1){ ?>
+                <div>
+                    <!-- Přítomní učitelé -->
+                    <h4>Přítomní učitelé: </h4>
+                    <?php
+                    echo(($konkretniAkce['pritomni_uc']== '') ? ("<p>Nebyl zadán přítomný učitel</p>") : ("<p>".$konkretniAkce['pritomni_uc']."</p>")); 
+                    ?>
+
+                    <!-- Shrnutí akce -->
+                    <h4>Shrnutí akce</h4>
+                    <?php 
+                    echo(($konkretniAkce['shrnuti']== '') ? ("<p>Shnrutí není k dispozici</p>") : ("<p>".$konkretniAkce['shrnuti']."</p>")); 
+                    ?>
+
+                    <!-- vypis jednotlivých soupisek -->
+
+                    <div>
+    <h4>Soupisky:</h4>
+    <?php
+    foreach ($this->data["soup"] as $soup) {
+        ?>
+        <div>
+            <?php
+            if ($this->data['ia'] != $soup["id_akce"]) {
+                continue;
+            }
+            echo "<h4>".$soup['nazev_skupiny']."</h4>";
+            foreach ($this->data['ucastnici'] as $ucast) {
+                if (!($ucast['id_soup'] == $soup['id_soup'])) {
+                    continue;
+                }
+                $emailFound = false; // Předpokládáme, že e-mail není nalezen
+                foreach ($this->data['uzivatele'] as $uziv) {
+                    if ($ucast['email'] == $uziv['email']) {
+                        // E-mail nalezen, vypište jméno a příjmení
+                        echo "<h5>".$uziv['jmeno']." ".$uziv['prijmeni']." ".$uziv['id_trid']."</h5>";
+                        $emailFound = true;
+                        break; // Ukončíme vyhledávání, protože e-mail byl nalezen
+                    }
+                }
+                if (!$emailFound) {
+                    // E-mail nenalezen, rozdělíme e-mailovou adresu a vypište jméno a zbytek e-mailu
+                    $parts = explode(".", $ucast['email']);
+                    $firstName = ucfirst($parts[0]);
+                    $partsRest = explode(".", $parts[1]);
+                    $restOfMail = ucfirst($partsRest[0]);
+                    echo "<h5>".$firstName." ".$restOfMail."</h5>";
+                    
+                }
+                foreach ($this->data['du'] as $du) {
+                    if (!($du['id_ucast'] == $ucast['id_ucast'])) {
+                        continue;
+                    }
+                    ?>
+                    <div>
+                        <h6>Disciplíny:</h6>
+                        <?php
+                        foreach ($this->data['disc'] as $disc) {
+                            if (!($du['id_disc'] == $disc['id_disc'])) {
+                                continue;
+                            }
+                            echo $disc['nazev_disc']."<br>";
+                        }
+                        ?>
+                    </div>
+                    <?php
+                }
+                echo "<h6>Výsledek žáka:</h6> <p>".$ucast['vys_u']."</p>";
+            }
+            ?>
+        </div>
+        <?php
+    }
+    ?>
+</div>
+
+<?php if ($this->data['session']['opravneni'] >= 1) : ?>
+                    
+                    <form method="post">
+                        <button type="submit" name="cele_smazat">Smazat</button>
+                    </form>
+<?php endif; ?>
+                   
+
+                    
+                </div>
+            <?php
+            }
+            ?>
+
+            <!-- Přidání a vypis soupisek-->
+            <div>
+                <?php if ($konkretniAkce["archivovano"] == 0): ?>
+                    <div>
+                        <?php if ($this->data['session']['opravneni'] >= 1) { ?>
+                        <a href="vytvorsoupisku?ia=<?php echo $konkretniAkce['id_akce']; ?>"><button type="button">+</button></a>
+                        <?php } ?>
+                        <h2>Soupisky</h2>
+                        <ul>
+                            <?php 
+                            foreach($this->data["soupisky"] as $soup) :?>
+                                <li>
+                                    <a href="soupiska?is=<?php echo $soup['id_soup']; ?>"><?= $soup['nazev_skupiny'];?></a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <a href="archiv?iar=<?php echo $konkretniAkce['id_akce']; ?>">
+
+            <?php if ($konkretniAkce["archivovano"] == 0 && $this->data['session']['opravneni'] >= 1): ?>
+                <button type="button">Archivovat</button>
+            <?php endif; ?>
+        </a>
+
+        <!-- ------------------------------------------------SWITCH---------------------------------------------------------------- -->
+
+        <!-- Edit -->
+        <div id="edit_a">
+
+            <h2>Edit akce</h2>
+            <form method="post">
+
+    <!-- Edit akce-->     
+                <div>
+                    <h2>Akce</h2>
+                    <!-- Nazev akce -->
+                    <h5 for="nazev_akce">Nazev: </h5>
+                    <input type="text" name="nazev_akce" value="<?php echo $konkretniAkce['nazev_akce']; ?>">
+                    <!-- Datum -->
+                    <h5 for="datum_zahajeni">Datum zahajeni: </h5>
+                    <input type="date" name="datum_zahajeni" value="<?php echo $konkretniAkce['datum_zahajeni']; ?>">
+                    <!-- Delka dni -->   
+                    <h5 for="datum_konce">Delka dni: </h5>
+                    <input type="date" name="datum_konce" value="<?php echo $konkretniAkce['datum_konce']; ?>">
+                    <!-- Misto konani -->
+                    <h5 for="misto_kon">Misto konani: </h5>
+                    <input type="text" name="misto_kon" value="<?php echo $konkretniAkce['misto_kon']; ?>">
+                    <!-- Poradatel -->
+                    <h5 for="poradatel">Poradatel: </h5>
+                    <input  type="text" name="poradatel" value="<?php echo $konkretniAkce['poradatel']; ?>">
+                    <!-- Opakovanost -->
+                    <h5 for="opak">Opakovanost: </h5>
+                    <select name="id_opak" class="select_opak" style="width: 100%">
+                        <?php foreach ($this->data['opak'] as $opak): ?>
+                            <option value="<?php echo $opak['id_opak']; ?>" >
+                                <?php echo $opak['nazev_opak'] ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+
+                <h5 for="kolo">Kolo: </h5>
+                <select name="id_kolo" class="select_kolo" style="width: 100%">
+                    <?php foreach ($this->data['kolo'] as $kolo): ?>
+                        <option value="<?php echo $kolo['id_kolo']; ?>" >
+                            <?php echo $kolo['nazev_kolo'] ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                    <!-- Popis akce -->
+                    <h5 for="popisek_akce">Popis: </h5>
+                    <textarea name="popisek_akce" rows="4" cols="50"><?php echo $konkretniAkce['popisek_akce']; ?></textarea>
+                    <!-- Učitelé -->
+                    <h5 for="pritomni_uc">Přítomní učitelé </h5>
+                    <input type="text" name="pritomni_uc" value="<?php echo $konkretniAkce['pritomni_uc']; ?>">
+                </div>
+
+            <!-- Edit akcedisc -->
+                <div>
+                    <h5>Disciplíny</h5>
+                <!-- Přidání disciplín -->
+                    <div class="divAkceDisc">
+                        <select name="pridat_id_disc[]" class="select_disc" style="width: 100%" multiple>
+                            <?php
+                            foreach($this->data['vyber_disciplin'] as $vyber_disc):?>
+                                <option value="<?php echo $vyber_disc['id_disc']; ?>"><?php echo $vyber_disc['nazev_disc']; ?></option>
+                            <?php endforeach?>
+                        </select>
+                    </div>
+
+                <!-- Výběr Discipliny s checkboxy-->
+                    <div>
+                        <h5 for="cb_smazat">Tlačítko pro odebrání vybraných disciplín</h5>
+                        <button type="submit" name="cb_smazat">Odebrat</button>
+                        <?php
+                            foreach($this->data['discipliny'] as $disc) :?>
+                                <input type="checkbox" name="selected_disc[]" value="<?php echo $disc['id_akce_disc']; ?>">         
+                            <?php 
+                            echo $disc['nazev_disc'] . "<br>"; 
+                            endforeach?>
+                    </div>                   
+                </div>
+                <!-- Tlačítka pro Uložení a Smazání -->
+                <button type="submit" name="ulozit">Uložit</button>
+                <h5 for="cele_smazat">Tlačítko pro smazání akce</h5>
+                <button type="submit" name="cele_smazat">Smazat</button>
+            </form>
+        </div>
+
+    </body>
+</html>

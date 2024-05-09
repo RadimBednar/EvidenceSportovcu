@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+    <title>Přidání nového uživatele</title>
+
+ <!-- javascript a jquery -->
+ <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <script src="pohledy/script.js"></script> 
+
+</head>
+<body>
+    <h1>Přidání nového uživatele</h1>
+    <div class = "container">
+    <form method="post">
+        <label for="email">Email:</label>
+        <input type="text" name="email" id="email" required><br>
+
+        <label for="id_trid">Třída:</label>
+        <input type="text" name="id_trid" id="id_trid"><br>
+
+        <label for="isic">ISIC:</label>
+        <input type="text" name="isic" id="isic"><br>
+
+        <label for="jmeno">Jméno:</label>
+        <input type="text" name="jmeno" id="jmeno" required><br>
+
+        <label for="prijmeni">Příjmení:</label>
+        <input type="text" name="prijmeni" id="prijmeni" required><br>
+
+        <label for="dat_nar">Datum narození:</label>
+        <input type="date" name="dat_nar" id="dat_nar"  required><br>
+
+        <label for="pohlavi">Pohlaví:</label>
+        <select name="pohlavi" id="pohlavi" class = "select_pohlavi" style="width: 100%" required>
+            <option value="M">Muž</option>
+            <option value="Z">Žena</option>
+        </select><br>
+
+        <button type="submit" name="pridatUzivatele">Přidat uživatele</button>
+    </form>
+
+
+
+    <h1>Odstranění uživatele</h1>
+    <form method="post">
+        <label for="email">Email:</label>
+        <input type="text" name="email" id="email" required><br>
+
+        <button type="submit" name="odstranitUzivatele">Odstranit uživatele</button>
+    </form>
+</body>
+</html>

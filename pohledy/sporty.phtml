@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+
+    </head>
+    <body>
+    <?php 
+    
+    if ($this->data['session']['opravneni'] >= 1) : ?>
+        <h1>Přidání a Výpis všech sportů</h1>
+
+        <!-- Výpis zpráv -->
+        <?php if (isset($this->zpravy) && !empty($this->zpravy)): ?>
+            <ul>
+                <?php foreach ($this->zpravy as $zprava): ?>
+                    <li><?php echo $zprava; ?></li>
+                <?php endforeach; ?>
+            </ul>
+
+
+        <?php endif; ?>
+        <div class="container">
+        <!-- Formulář pro přidání sportu -->
+        <form  method="post">
+
+            <!-- název sportu -->
+            <label for="nazev_sportu">Název sportu:</label>
+            <input type="text" name="nazev_sportu" required>
+
+            <!-- tlačítko pro přidání -->
+            <button type="submit" name="pridej">Přidat sport</button>
+        </form>
+                </div>
+
+
+        <!-- Výpis všech sportů -->
+
+        <?php if (isset($this->data['sporty']) && !empty($this->data['sporty'])): ?>
+            <h2>Všechny sporty</h2>
+            <ul>
+            <?php foreach ($this->data['sporty'] as $sport): ?>
+                <div class="container">
+                    <h4> <?php echo $sport['nazev_sportu']; ?></h4>
+                        <form method="post">
+                            <!-- název sportu -->
+                            <input type="hidden" name="editovany_sport_id" value="<?php echo $sport['id_sport']; ?>">
+                            <label for="novy_nazev_sportu">Nový název sportu:</label>
+                            <input type="text" name="novy_nazev_sportu" >
+
+                            <!-- tlačitka pro úpravu a mazání -->
+                            <button type="submit" name="ulozit">Uložit</button>
+                            <input type="hidden" name="smazany_sport_id" value="<?php echo $sport['id_sport']; ?>">
+                            <button type="submit" name="smazat">Smazat</button>
+                        </form>
+                    </li>
+                    </div>
+                    <!-- Zde můžete přidat další informace o sportu, které chcete zobrazit -->
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?>
+            <p>Nejsou k dispozici žádné sporty.</p>
+        <?php endif; ?>
+        <?php elseif($this->data['session']['opravneni'] === null) : $this->presmeruj("ldap"); 
+        elseif($this->data['session']['opravneni'] === 0) : $this->presmeruj("uvod");
+        endif ?>
+    </body>
+</html>

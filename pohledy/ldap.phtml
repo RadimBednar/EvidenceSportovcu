@@ -1,0 +1,165 @@
+<link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+<?php 
+
+use LdapRecord\Query\Builder;
+use LdapRecord\Models\ActiveDirectory\User;
+use LdapRecord\Models\Entry;
+use LdapRecord\Container;
+use LdapRecord\Connection;
+use LdapRecord\Models\ActiveDirectory\Group;
+use Dotenv\Dotenv;
+//pro lokální
+/*$connection = new Connection([
+    'hosts' => ['192.168.0.158'],
+    'username' => 'r.bednar.st@maturitaServer.local',
+    'password' => 'Gg7702145440',
+    'base_dn' => 'dc=maturitaServer,dc=local',
+    'port' => 389,
+]);*/
+//pro školní server odkomentovat
+$connection = new Connection([//nastavení připojení k ldap serveru
+                'hosts' => ['msad19.spseiostrava.cz'],//adresa serveru
+                'username' => 'ldap_zaci',//uživatelské jméno
+                'password' => 'Chranitjako0k0vhlav3',//heslo
+                'base_dn' => 'dc=msad19,dc=spseiostrava,dc=cz',//určuje základní místo, od kterého se bude provádět vyhledávání v hierarchické struktuře adresáře LDAP
+                'port' => 389,  //port
+            ]);
+
+
+    
+    $connection->connect();
+    Container::addConnection($connection, 'ldap'); // Přidejte připojení do kontejneru s názvem 'ldap'
+
+    try {
+        $connection->connect();
+    
+       // echo "Successfully connected!";
+        echo "<br>";
+        
+    } catch (\LdapRecord\Auth\BindException $e) {
+        $error = $e->getDetailedError();
+    
+        echo $error->getErrorCode();
+        echo $error->getErrorMessage();
+        echo $error->getDiagnosticMessage();
+    }
+
+    // ...
+    $modelyUzivatelu = new ModelyUzivatel;
+
+   
+     ?>
+
+        <h2>Přihlášení uživatele</h2>
+<form method="post">
+    <div>
+        <h5 for="email">E-mail</h5>
+        <input type="email" name="email" id="email" required>
+    </div>
+    <div>
+        <h5 for="heslo">Heslo</h5>
+        <input type="password" name="heslo" id="heslo" required>
+    </div>
+    <input type="submit" value="Přihlásit se">
+</form>
+
+<?php 
+
+
+
+
+ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Retrieve submitted email and password
+    $submittedEmail = $_POST['email'];
+    $submittedPassword = $_POST['heslo'];
+    
+   // var_dump($_SESSION['email']);
+
+    // Authenticate the user against LDAP
+    try {
+        // Find the user in LDAP by email
+        $user = User::on('ldap')->where('mail', '=', $submittedEmail)->firstOrFail();
+
+        // Attempt authentication
+        
+        if ($connection->auth()->attempt($user->getDn(), $submittedPassword)) {
+            // User has been successfully authenticated.
+            $_SESSION['loggedIn'] = true; 
+    
+            $_SESSION['email'] =  $submittedEmail;
+            foreach ($this->data['uzivatel'] as $uziv) {
+                if ($uziv["email"] == $submittedEmail) {
+                    $_SESSION["opravneni"] = $uziv["opravneni"];
+                }
+            }
+
+
+          // header("Refresh: 0");
+                
+           if (strpos($submittedEmail, '.st') === false) {
+            // Call the method to add a teacher from ModelyUzivatel
+           
+            $id= $modelyUzivatelu->vratPosledniIdUcitele();
+
+            foreach ($modelyUzivatelu->vratInfoVsechUcitelu() as $ucitel) {
+                // Získání e-mailu učitele
+                $ucitelEmail = $ucitel['email']; // Předpokládejme, že e-mail je uložený ve formě asociativního pole pod klíčem 'email'
+            
+                // Kontrola, zda se e-mail učitele rovná e-mailu odeslanému ve formuláři
+                if ($ucitelEmail !== $submittedEmail) {
+                    // E-mail učitele se neshoduje s e-mailem z formuláře, zavolejte metodu pro přidání učitele
+                     $id+=1;
+            $uzivatel = [
+                'id_uziv' => $id,
+              //  'email' => $submittedEmail,
+                'opravneni' => 1,
+                'jmeno' => $user->givenName[0] ,
+                'prijmeni' =>$user->sn[0],
+            ];
+            $pridaniUc=$modelyUzivatelu->pridejUcitele($uzivatel);
+            
+            if($pridaniUc){
+                $this->pridejZpravu("Učitel přidán do databáze."); 
+            }
+            else{
+                $this->pridejZpravu("Učitel nebyl přidán do databáze."); 
+            }
+
+                }
+            }
+
+
+
+
+
+
+
+           
+        }
+        $this->presmeruj("uvod");
+        } else {
+            // Check if the email is incorrect
+            $userByEmail = User::on('ldap')->where('mail', '=', $submittedEmail)->first();
+            if ($userByEmail) {
+                // Email is correct, but password is incorrect
+                echo "Špatné heslo";
+            } 
+        }
+    } catch (\Exception $e) {
+        //echo "An error occurred: " . $e->getMessage();
+        echo "Špatně zadaný email";
+    }
+
+// ...
+
+}
+
+
+
+
+   
+
+
+  
+
+    

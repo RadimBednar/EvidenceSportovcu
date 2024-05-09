@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+        
+        <!-- javascript a jquery -->
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <script src="pohledy/script.js"></script> 
+
+    </head>
+    <body>
+        <
+        <h1><?php echo $konkretniAkce['nazev_akce'];?></h1>
+        <div class ="container">
+        <p><?php echo $konkretniAkce['datum_zahajeni'];?><p>
+        <p><?php echo $konkretniAkce['misto_kon'];?><p>
+        <h2><?php echo $konkretniSoup['nazev_skupiny'];?></h2>
+        
+        <?php if ($this->data['session']['opravneni'] >= 1) : ?>
+            <button id="switch">Switch</button>
+        <?php endif; ?>
+
+        <!-- Vypis -->
+        <div id="vypis_s" >
+            <div>
+                <label>Učastníci:</label>
+                <?php 
+                $kontrola = [];
+                foreach($this->data['ucastniciSoup'] as $ucastnik) {
+                    if (!(empty($kontrola)) && ($kontrola['jmeno'] == $ucastnik['jmeno'] && 
+                                               $kontrola['prijmeni'] == $ucastnik['prijmeni'] && 
+                                               $kontrola['id_trid'] == $ucastnik['id_trid'])) {
+                        echo '<p>'.$ucastnik['nazev_disc'] . "<br>";
+                        $kontrola = [
+                            'jmeno' => $ucastnik['jmeno'],
+                            'prijmeni' => $ucastnik['prijmeni'],
+                            'id_trid' => $ucastnik['id_trid'],
+                        ];
+                    } else {
+                        echo '<p>'."<br>" . $ucastnik['jmeno'] . " " . $ucastnik['prijmeni'] . " " . $ucastnik['id_trid'] . "<br>";
+                        echo '<p>'.$ucastnik['nazev_disc'] . "<br>";
+                        $kontrola = [
+                            'jmeno' => $ucastnik['jmeno'],
+                            'prijmeni' => $ucastnik['prijmeni'],
+                            'id_trid' => $ucastnik['id_trid'],
+                        ];
+                    }
+                }
+                if ($this->data['session']['opravneni'] >= 1) : ?>
+                    <form method="post">
+                        <button type="submit" name="genPDF">VygenerujPDF</button>
+                    </form>
+                <?php endif; ?>
+
+            </div>
+
+
+            <!-- Vypis x pending -->
+
+            <div>
+            <?php if ($this->data['session']['opravneni'] === 0 ) : ?>
+                <!-- požadavek -->
+                <form method="post">
+                    <div>
+                        <lable for="disc_pending">Chci se přidat</lable>
+                        <select name="disc_pending[]" class="select_disc" style="width: 100%" multiple>
+                        <?php
+                                foreach($this->data['discipliny'] as $disc){?>
+                                        <option value="<?php echo $disc['id_disc']; ?>"><?php echo $disc['nazev_disc']; ?></option>          
+                                    <?php
+                                }
+                            ?>
+                        </select>
+                    </div>
+                    <button type="submit" name="pridat_pending">Přidat se</button>
+                </form>
+                <?php endif;?>
+            </div>
+
+
+            <div>
+                <?php if ($this->data['session']['opravneni'] >= 1) : ?>
+                <!-- vyhodnocení -->
+                <div>
+                    <form method="post">
+                        
+                        <?php
+                        /*
+                        foreach ($this->data['ucast'] as $ucast){
+                            if(!($ucast['id_soup'] == $konkretniSoup['id_soup'] && $ucast['potrvzeni'] == 0)){
+                                continue;
+                            }
+                        ?>
+                            <input type="checkbox" name="selected_pending[]" value="<?php echo $ucast['id_ucast']; ?>">
+                        <?php
+                            foreach ($this->data['uziv'] as $uziv){
+                                if(!($ucast['email'] == $uziv['email'])){
+                                    continue;
+                                }
+                                echo "<div>";
+                                echo "<p>".$uziv['jmeno']." ".$uziv['prijmeni']." ".$uziv['id_trid']."</p>";
+                                foreach($this->data['du'] as $du){
+                                    if(!($du['id_ucast']==$ucast['id_ucast'])){
+                                        continue;
+                                    }
+                                    foreach($this->data['disc'] as $disc){
+                                        if(!($du['id_disc']==$disc['id_disc'])){
+                                            continue;
+                                        }
+                                        echo "<p>".$disc['nazev_disc']."</p>";
+                                    }
+                                }
+                                echo "</div>";
+                            }
+                        }*/
+                        $kontrola = [];
+                        foreach($this->data['ucastniciPending'] as $ucast_pending){?>
+                            <input type="checkbox" name="selected_pending[]" value="<?php echo $ucast_pending['id_ucast']; ?>">
+                        <?php
+                        if (!(empty($kontrola)) && ($kontrola['jmeno'] == $ucastnik['jmeno'] && 
+                                                    $kontrola['prijmeni'] == $ucastnik['prijmeni'] && 
+                                                    $kontrola['id_trid'] == $ucastnik['id_trid'])) {
+                            echo '<p>'.$ucastnik['nazev_disc'] . "<br>";
+                            $kontrola = [
+                                'jmeno' => $ucastnik['jmeno'],
+                                'prijmeni' => $ucastnik['prijmeni'],
+                                'id_trid' => $ucastnik['id_trid'],
+                            ];
+                            } else {
+                            echo '<p>'."<br>" . $ucastnik['jmeno'] . " " . $ucastnik['prijmeni'] . " " . $ucastnik['id_trid'] . "<br>";
+                            echo '<p>'.$ucastnik['nazev_disc'] . "<br>";
+                            $kontrola = [
+                                'jmeno' => $ucastnik['jmeno'],
+                                'prijmeni' => $ucastnik['prijmeni'],
+                                'id_trid' => $ucastnik['id_trid'],
+                            ];
+                            }
+                        }
+
+                        ?>
+                        <button type="submit" name="prijmout_pending">prijmout</button>
+                        <button type="submit" name="odmitnout_pending">odmitnout</button>
+                    </form>
+                </div> 
+                <?php  endif?>
+            </div>
+        </div>
+
+
+    
+            
+        <!-- Edit -->
+        <div id="edit_s">
+            <h2>Edit soupisky</h2>
+            <form method="post">
+    <!-- Edit akce-->     
+                <div>
+                    <h2>Soupiska</h2>
+                    <!-- Nazev skupiny -->
+                    <label for="nazev_skupiny">Nazev: </label>
+                    <input type="text" name="nazev_skupiny" value="<?php echo $konkretniSoup['nazev_skupiny']; ?>">
+                </div>
+
+            <!-- Edit ucastnik -->
+                <div>
+                    <h2>Účastníci</h2>
+                    <div>
+                    <!-- Přidání dalšího učastníka -->
+                        <div>
+                            <label for="pridat_ucast">Přidat  účastníka: </label>
+                            <select name="pridat_ucast" class="select_uziv" style="width: 100%">
+                                <?php 
+                                foreach($this->data['ucastniciVyber'] as $vyber_ucast){?>
+                                    <option value="<?= $vyber_ucast['email']; ?>"><?=$vyber_ucast['id_trid']." ".$vyber_ucast['jmeno']." ".$vyber_ucast['prijmeni'] ; ?></option>
+                                <?php }
+                            ?>
+                            </select>
+                        </div>
+                        <div>
+                            <select name="disc_k_prirazeni[]" class="select_disc" style="width: 100%" multiple>
+                            <?php
+                                foreach($this->data['discipliny'] as $disc){?>
+                                    <option value="<?php echo $disc['id_disc']; ?>"><?php echo $disc['nazev_disc']; ?></option>          
+                                <?php
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Výběr Discipliny s checkboxy-->
+                    <div>
+                        <label for="cb_smazat">Pro odebrání vybraných účastníků</label>
+                        <button type="submit" name="cb_smazat">Odebrání</button>
+                        <?php
+                        $kontrola = [];
+                        foreach($this->data['ucastniciSoup'] as $ucastnik) {
+                            if (!(empty($kontrola)) && ($kontrola['jmeno'] == $ucastnik['jmeno'] && 
+                                                    $kontrola['prijmeni'] == $ucastnik['prijmeni'] && 
+                                                    $kontrola['id_trid'] == $ucastnik['id_trid'])) {
+                                echo '<p>'.$ucastnik['nazev_disc'] . "<br>";
+                                $kontrola = [
+                                    'jmeno' => $ucastnik['jmeno'],
+                                    'prijmeni' => $ucastnik['prijmeni'],
+                                    'id_trid' => $ucastnik['id_trid'],
+                                ];
+                            } else { ?>
+                                <input type="checkbox" name="selected_ucast[]" value="<?php echo $ucastnik['id_ucast']; ?>"> <?php
+                                echo '<p>'."<br>" . $ucastnik['jmeno'] . " " . $ucastnik['prijmeni'] . " " . $ucastnik['id_trid'] . "<br>";
+                                echo '<p>'.$ucastnik['nazev_disc'] . "<br>";
+                                $kontrola = [
+                                    'jmeno' => $ucastnik['jmeno'],
+                                    'prijmeni' => $ucastnik['prijmeni'],
+                                    'id_trid' => $ucastnik['id_trid'],
+                                ];
+                            }
+                        }
+
+
+
+                        ?>
+                    </div>                   
+                </div>
+                <!-- Tlačítka pro Uložení a Smazání -->
+                <button type="submit" name="ulozit">Uložit</button>
+                <button type="submit" name="cele_smazat">Smazat</button>
+            </form>
+        </div>
+        
+    </body>
+</html>

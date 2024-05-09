@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+    <title>Přidělení disciplín žákům</title> 
+    
+    
+    
+    <style>
+        th {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<?php if ($this->data['session']['opravneni'] >= 1) : ?>
+    
+    <h1>Přidělení disciplín žákům</h1>
+    <div class="container">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <input id="search-input" type="text">
+   
+    <table>
+        <thead>
+            <tr>
+                <th data-colname="id_trid" data-order="desc">Třída &#9650</th>
+                <th data-colname="isic" data-order="desc">ISIC &#9650</th>
+                <th data-colname="jmeno" data-order="desc">Jméno &#9650</th>
+                <th data-colname="prijmeni" data-order="desc">Příjmení &#9650</th>
+             <!--   <th data-colname="rekord" data-order="desc">Rekord &#9650</th> -->
+            </tr>
+        </thead>
+        <tbody id="myTable"></tbody>
+    </table>
+
+    <div id="form-container"></div>
+
+    <script>
+        var myArray = <?php echo json_encode($this->data["studenti"]); ?>
+
+        $('#search-input').on('keyup', function () {
+            var value = $(this).val().toLowerCase();
+            var data = searchTable(value, myArray);
+            buildTable(data);
+        });
+
+        buildTable(myArray);
+
+        $('th').on('click', function () {
+            var column = $(this).data('colname');
+            var order = $(this).data('order');
+            var text = $(this).html();
+            text = text.substring(0, text.length - 1);
+
+            if (order == 'desc') {
+                myArray = myArray.sort((a, b) => a[column] > b[column] ? 1 : -1);
+                $(this).data("order", "asc");
+                text += '&#9660';
+            } else {
+                myArray = myArray.sort((a, b) => a[column] < b[column] ? 1 : -1);
+                $(this).data("order", "desc");
+                text += '&#9650';
+            }
+
+            $(this).html(text);
+            buildTable(myArray);
+        });
+
+        function buildTable(data) {
+            var table = document.getElementById('myTable');
+            table.innerHTML = '';
+            for (var i = 0; i < data.length; i++) {
+                var row = `<tr>
+                                <td>${data[i].id_trid}</td>
+                                <td>${data[i].isic}</td>
+                                <td>${data[i].jmeno}</td>
+                                <td>${data[i].prijmeni}</td>
+                                
+                                <td><button onclick="showForm(${i})">Přidat hodnoty</button></td>
+                           </tr>`;
+                table.innerHTML += row;
+            }
+        }
+
+        function searchTable(value, data) {
+    var filteredData = [];
+    for (var i = 0; i < data.length; i++) {
+        var jmeno = data[i].jmeno.toLowerCase();
+        var prijmeni = data[i].prijmeni.toLowerCase();
+        var id_trid = data[i].id_trid.toString().toLowerCase(); 
+
+        if (jmeno.includes(value) || prijmeni.includes(value) || id_trid.includes(value)) {
+            filteredData.push(data[i]);
+        }
+    }
+
+    return filteredData;
+}
+        function showForm(index) {
+            var formContainer = document.getElementById('form-container');
+            formContainer.innerHTML = '';
+
+            var form = document.createElement('div');
+            form.className = 'student-form';
+            form.innerHTML = `
+                <h2>Formulář pro přidání hodnot do databáze</h2>
+                <form id="sportuje-form" method="post">
+                    <input type="hidden" name="email" value="${myArray[index].email}">
+                    
+                    <label for="id_disc">Disciplíny:</label>
+                    <select name="id_disc">
+                    
+                        <?php foreach ($this->data['disc'] as $disc): ?>
+                            <option value="<?php echo $disc['id_disc']; ?>" >
+                                <?php echo $disc['nazev_disc']; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    
+                    <label for="id_poz">Pozice:</label>
+                    <select name="id_poz">
+                    <option value="" selected disabled>Vyberte pozici</option>
+                        <?php foreach ($this->data['pozice'] as $pozice): ?>
+                            <option value="<?php echo $pozice['id_poz']; ?>" >
+                                <?php echo $pozice['nazev_poz']; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <label for="tym">Tým:</label>
+                    <input type="text" id="tym" name="tym">
+
+                    <label for="id_urov">Úroveň:</label>
+                    <select name="id_urov">
+                    <option value="" selected disabled>Vyberte úroveň</option>
+                        <?php foreach ($this->data['uroven'] as $uroven): ?>
+                            <option value="<?php echo $uroven['id_urov']; ?>" >
+                                <?php echo $uroven['nazev_urov']; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <label for="rekord">Rekord :</label>
+                    <input type="text" id="rekord" name="rekord" >
+
+                    <input type="submit" value="Přidat hodnoty" name="pridej">
+                </form>
+            `;
+
+            formContainer.appendChild(form);
+            formContainer.style.display = 'block';
+        }
+    </script>
+    <?php elseif($this->data['session']['opravneni'] === null) : $this->presmeruj("ldap"); 
+    elseif($this->data['session']['opravneni'] === 0) : $this->presmeruj("uvod");
+    endif ?>
+</body>
+</html>
+

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+        
+        <!-- javascript a jquery -->
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <script src="pohledy/script.js"></script> 
+    </head>
+    <body>
+
+
+    <?php if ($this->data['session']['opravneni'] >= 1) : ?>
+        <h1>Vytvoření Akce</h1>
+
+        <!-- Výpis zpráv -->
+        <?php if (isset($this->zpravy) && !empty($this->zpravy)): ?>
+            <ul>
+                <?php foreach ($this->zpravy as $zprava): ?>
+                    <li><?php echo $zprava; ?></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+
+        <!-- Formulář pro přidání akce -->
+        <div class="container">
+        <form method="post">
+            <!-- Nazev akce -->
+            <label for="nazev_akce">Nazev: <span class="required">*</span></label>
+            <input required type="text" name="nazev_akce">
+            <!-- Datum -->
+            <label for="datum_zahajeni">Datum zahajeni: <span class="required">*</span></label>
+            <input required type="date" name="datum_zahajeni">
+            <!-- Delka dni -->   
+            <label for="datum_konce">Datum konce: </label>
+            <input type="date" name="datum_konce">
+            <!-- Misto konani -->
+            <label for="misto_kon">Misto konani: <span class="required">*</span></label>
+            <input required type="text" name="misto_kon">
+
+            <label for="poradatel">Poradatel: </label>
+            <input  type="text" name="poradatel">
+
+            <label for="opak">Opakovanost: </label>
+            <select name="id_opak" class="select_opak" style="width: 100%">
+                <?php foreach ($this->data['opak'] as $opak): ?>
+                    <option value="<?php echo $opak['id_opak']; ?>" >
+                        <?php echo $opak['nazev_opak'] ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <!-- Výběr kola -->
+            <label for="kolo">Kolo: </label>
+            <select name="id_kolo" class="select_kolo" style="width: 100%">
+                <?php foreach ($this->data['kolo'] as $kolo): ?>
+                    <option value="<?php echo $kolo['id_kolo']; ?>" >
+                        <?php echo $kolo['nazev_kolo'] ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <!-- Popis akce -->
+            <label for="popisek_akce">Popis: <span class="required">*</span></label>
+            <textarea required name="popisek_akce" rows="4" cols="50"></textarea>
+            <!-- Disciplina -->
+            <label for="id_disc">Disciplina: <span class="required">*</span></label>
+            <!-- Multiple select jako combobox -->
+            <div>
+                <select required name="id_disc[]" class="select_disc" style="width: 100%" multiple>
+                    <?php foreach ($this->data['disc'] as $disc):?>
+                        <option value="<?= $disc['id_disc']; ?>"><?= $disc['nazev_disc']; ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <!-- Tlačítka pro Přidání -->
+            <button type="submit" name="pridej">Přidat záznam</button>
+        </form>
+        </div>
+        <?php elseif($this->data['session']['opravneni'] === null) : $this->presmeruj("ldap"); 
+        elseif($this->data['session']['opravneni'] === 0) : $this->presmeruj("uvod");
+        endif ?>
+    </body>
+</html>

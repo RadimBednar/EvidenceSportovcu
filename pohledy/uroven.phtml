@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+ 
+    </head>
+    <body>
+        <?php if ($this->data['session']['opravneni'] >= 1) : ?>
+
+        <h1>Přidaní úrovní pro sportovce</h1>
+
+        <!-- Výpis zpráv -->
+        <?php if (isset($this->zpravy) && !empty($this->zpravy)): ?>
+            <ul>
+                <?php foreach ($this->zpravy as $zprava): ?>
+                    <li><?php echo $zprava; ?></li>
+                <?php endforeach; ?>
+            </ul>
+
+
+        <?php endif; ?>
+        <div class="container">
+        <!-- Formulář pro přidání pozic -->
+        <form  method="post">
+            <label for="nazev_urov">Název urovne:</label>
+            <input type="text" name="nazev_urov" required>
+            <button type="submit" name="pridej">Přidat uroven</button>
+        </form>
+
+        </div>
+
+        <!-- Výpis všech sportů -->
+
+        <?php if (isset($this->data['urov']) && !empty($this->data['urov'])): ?>
+            <h2>Všechny urovne</h2>
+            <ul>
+            <?php foreach ($this->data['urov'] as $urov): ?>
+                <div class="container">
+                    <h4><?php echo $urov['nazev_urov']; ?></h4>
+                        <form method="post">
+                            <input type="hidden" name="editovana_uroven_id" value="<?php echo $urov['id_urov']; ?>">
+                            <label for="novy_nazev_urovne">Nový název urovne:</label>
+                            <input type="text" name="novy_nazev_urovne" >
+                            <button type="submit" name="ulozit">Uložit</button>
+                            <input type="hidden" name="smazana_uroven_id" value="<?php echo $urov['id_urov']; ?>">
+                            <button type="submit" name="smazat">Smazat</button>
+                        </form>
+                    </li>
+                    </div>
+                    <!-- Zde můžete přidat další informace o sportu, které chcete zobrazit -->
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?>
+            <p>Nejsou k dispozici žádné urovne.</p>
+        <?php endif; ?>
+
+        <?php elseif($this->data['session']['opravneni'] === null) : $this->presmeruj("ldap"); 
+        elseif($this->data['session']['opravneni'] === 0) : $this->presmeruj("uvod");
+        endif ?>
+    </body>
+</html>

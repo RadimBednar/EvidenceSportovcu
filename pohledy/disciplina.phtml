@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="<?php $_SERVER["DOCUMENT_ROOT"] ?> /styly/stylyvypisakci.css">
+
+        <!-- javascript a jquery -->
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <script src="pohledy/script.js"></script> 
+    </head>
+    <body>
+    <?php if ($this->data['session']['opravneni'] >= 1) : ?>
+
+        <h1>Přidání a Výpis všech disciplín</h1>
+
+        <div class="container">
+
+        <!-- Výpis zpráv -->
+        <?php if (isset($this->zpravy) && !empty($this->zpravy)): ?>
+            <ul>
+                <?php foreach ($this->zpravy as $zprava): ?>
+                    <li><?php echo $zprava; ?></li>
+                <?php endforeach; ?>
+            </ul>
+
+
+        <?php endif; ?>
+
+        <!-- Formulář pro přidání disciplíny -->
+        <form method="post">
+
+            <!-- výběr sportů -->
+            <label for="id_disc">Sport:</label>
+            <select name="id_sport" class="select_sport" style="width: 100%" required>
+                <?php foreach ($this->data['sporty'] as $sport): ?>
+                    <option value="<?php echo $sport['id_sport']; ?>">
+                        <?php echo $sport['nazev_sportu'] ?> 
+                    </option>
+                <?php endforeach; ?>
+            </select>
+
+            <!-- název disciplíny -->
+            <label for="nazev_disc">Název Disciplíny:</label>
+            <input type="text" name="nazev_disc" required>
+            
+            <!-- tlačitko pro přidání -->
+            <button type="submit" name="pridej">Přidat disciplínu</button>
+        </form>
+
+                </div>
+
+        <!-- Výpis všech disciplíny -->
+
+        <?php if (isset($this->data['discipliny']) && !empty($this->data['discipliny'])): ?>
+            <h2>Všechny disciplíny</h2>
+            <ul>
+            <?php foreach ($this->data['discipliny'] as $disc): ?>
+                <div class="container">
+                    <h4> <?php echo $disc['nazev_disc']; ?></h4>
+
+                        <form method="post">
+                            <input type="hidden" name="editovana_disciplina_id" value="<?php echo $disc['id_disc']; ?>">
+
+                            <!--Výběr sportu-->
+                            <label for="id_sport">Sport:</label>
+                                <select name="id_sport" class="select_sport" style="width: 100%">
+                                    <?php foreach ($this->data['sporty'] as $sport): ?>
+                                        <option value="<?php echo $sport['id_sport']; ?>" <?php echo ($disc['id_sport'] == $sport['id_sport']) ? 'selected' : ''; ?>>
+                                            <?php echo $sport['nazev_sportu']; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+
+                            <!-- název disciplíny -->
+                            <label for="novy_nazev_discipliny">Nový název disciplíny:</label>
+                            <input type="text" name="novy_nazev_discipliny" >
+
+                            <!-- tlačitka pro úpravu a mazání -->
+                            <button type="submit" name="ulozit">Uložit</button>
+                            <input type="hidden" name="smazana_disciplina_id" value="<?php echo $disc['id_disc']; ?>">
+                            <button type="submit" name="smazat">Smazat</button>
+                        </form>
+                    </li>
+                    </div>
+                    <!-- Zde můžete přidat další informace o sportu, které chcete zobrazit -->
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?>
+            <p>Nejsou k dispozici žádné disciplíny.</p>
+        <?php endif; ?>
+        
+        <?php elseif($this->data['session']['opravneni'] === null) : $this->presmeruj("ldap"); 
+        elseif($this->data['session']['opravneni'] === 0) : $this->presmeruj("uvod");
+        endif ?>
+    </body>
+</html>
+
